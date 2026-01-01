@@ -1,0 +1,96 @@
+---
+title: "No 'Happy' AI"
+author: "Derrick O"
+date: "2025-11-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Loading Dataset and packages
+```{r}
+library(pastecs)
+library(ggplot2)
+library(qqplotr)
+library(car)
+library(lsr)
+library(multcomp)
+library(ez)
+library(reshape2)
+library(Hmisc)
+whp21 <- read.csv("~/Desktop/Bus Analytics/world-happiness-report-2021.csv")
+View(whp21)
+```
+
+# Subsetting the data
+```{r}
+happy = subset(whp21, select = c("Country.name",
+  "Ladder.score",
+  "Logged.GDP.per.capita",
+  "Social.support",
+  "Freedom.to.make.life.choices",
+  "Perceptions.of.corruption"))
+```
+
+# Renaming the data headers
+```{r}
+names(happy) = c("country", "ladder", "gdp", "support",
+  "freedom", "corruption")
+
+happy <- na.omit(happy)
+```
+
+# Summary Statistics
+```{r}
+summary(happy)
+```
+# Distribution of happiness scores
+```{r}
+hist(happy$ladder,
+     main = "Distribution of Happiness Scores",
+     xlab = "Ladder Score",
+     col = "skyblue")
+```
+# Interpretation
+The histogram shows that most countries have happiness scores between about 4.5 and 6.5, with the most numbers around the middle of the scale. Few countries are on the ends: only a small number score below 3.5 or above 7. Overall, the distribution is fairly balanced with a slight lean toward the higher end, suggesting that while global happiness varies, most countries fall under a moderate level of happiness.
+
+# Social Support vs Happiness
+```{r}
+plot(happy$support, happy$ladder,
+     xlab = "Social Support",
+     ylab = "Happiness Score",
+     main = "Support vs Happiness",
+     pch = 19, col = "blue")
+```
+
+# Interpretation
+The scatterplot shows a strong positive relationship between social support and happiness. As social support increases, happiness scores rise as well. Most countries with higher support values cluster in the 6–8 happiness range, while countries with lower support show much lower and more scattered happiness scores. Overall, the plot suggests that having stronger social support is closely linked to higher life satisfaction.
+
+
+# GDP vs Happiness
+```{r}
+plot(happy$gdp, happy$ladder,
+     xlab = "Logged GDP per Capita",
+     ylab = "Happiness Score",
+     main = "GDP vs Happiness",
+     pch = 19, col = "darkgreen")
+```
+
+# Interpretation
+The scatterplot shows a positive relationship between GDP and happiness. As logged GDP per capita increases, happiness scores also tend to rise. Countries with higher GDP cluster toward the top-right of the graph, while lower-GDP countries show more variation in happiness. Overall, 'richer' countries are generally happier, but GDP isn’t the only factor driving well-being.
+
+
+# Linear Regression model
+```{r}
+model <- lm(ladder ~ support + freedom + corruption, data = happy)
+summary(model)
+```
+
+# Linear model Interpretation:
+To begin with, all three predictors: social support, freedom, and corruption—are statistically significant at the 0.001 level, indicating very strong evidence that they are associated with the happiness score.
+
+Looking at the R-squared value of 0.678, we get to understand that this model explains about 68% of the variation in happiness. Looking at the estimates, social support has the largest positive association with happiness: a 0.1 increase in social support is associated with about a 0.56-point increase in the happiness score, holding the other variables constant.
+
